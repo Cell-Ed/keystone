@@ -1,5 +1,5 @@
 var _ = require('underscore');
-var bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 var FieldType = require('../Type');
 var util = require('util');
 
@@ -63,7 +63,7 @@ password.prototype.addToSchema = function() {
             if (err) {
                 return next(err);
             }
-            bcrypt.hash(item.get(field.path), salt, function () {}, function(err, hash) {
+            bcrypt.hash(item.get(field.path), salt, function(err, hash) {
                 if (err) {
                     return next(err);
                 }
