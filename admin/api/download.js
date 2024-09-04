@@ -64,7 +64,7 @@ exports = module.exports = function(req, res) {
 	if (relFields) {
 		query.populate(relFields.join(' '));
 	}
-	query.exec(function(err, results) {
+	query.exec().then(function(err, results) {
 
 		if (err) return res.status(500).json(err);
 

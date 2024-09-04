@@ -1,7 +1,7 @@
 var async = require('async');
 var keystone = require('../../../');
 
-module.exports = function(req, res) {
+module.exports = function (req, res) {
 	if (!keystone.security.csrf.validate(req)) {
 		return res.apiError('invalid csrf');
 	}
@@ -17,7 +17,7 @@ module.exports = function(req, res) {
 	}
 	if (req.user) {
 		var userId = String(req.user.id);
-		if (ids.some(function(id) {
+		if (ids.some(function (id) {
 			return id === userId;
 		})) {
 			return res.apiError('not allowed', 'You can not delete yourself');
@@ -25,16 +25,16 @@ module.exports = function(req, res) {
 	}
 	var deletedCount = 0;
 	var deletedIds = [];
-	req.list.model.find().where('_id').in(ids).exec(function (err, results) {
+	req.list.model.find().where('_id').in(ids).exec().then(function (err, results) {
 		if (err) return res.apiError('database error', err);
-		async.forEachLimit(results, 10, function(item, next) {
-			item.remove(function (err) {
+		async.forEachLimit(results, 10, function (item, next) {
+			item.deleteOne({ _id: item._id }).then(function (err) {
 				if (err) return next(err);
 				deletedCount++;
 				deletedIds.push(item.id);
 				next();
 			});
-		}, function() {
+		}, function () {
 			return res.json({
 				success: true,
 				ids: deletedIds,
