@@ -12,7 +12,7 @@ exports = module.exports = function(req, res) {
 
 	var itemQuery = req.list.model.findById(req.params.item).select();
 
-	itemQuery.exec(function(err, item) {
+	itemQuery.exec().then(function(err, item) {
 
 		if (err) {
 			req.flash('error', 'A database error occurred.');
@@ -50,7 +50,7 @@ exports = module.exports = function(req, res) {
 				rel.columns = rel.list.defaultColumns;
 				rel.list.selectColumns(q, rel.columns);
 
-				q.exec(function(err, results) {
+				q.exec().then(function(err, results) {
 					rel.items = results;
 					done(err);
 				});

@@ -30,7 +30,7 @@ exports = module.exports = function(req, res) {
 				
 			var filters = req.list.getSearchFilters(req.query.q);
 
-			var count = req.list.model.count(filters);
+			var count = req.list.model.countDocuments(filters);
 			var query = req.list.model.find(filters)
 				.limit(limit)
 				.skip(skip)
@@ -49,11 +49,11 @@ exports = module.exports = function(req, res) {
 				});
 			}
 			
-			count.exec(function(err, total) {
+			count.exec().then(function(err, total) {
 
 				if (err) return sendError('database error', err);
 
-				query.exec(function(err, items) {
+				query.exec().then(function(err, items) {
 
 					if (err) return sendError('database error', err);
 
@@ -89,7 +89,7 @@ exports = module.exports = function(req, res) {
 
 			_.each(order, function(id, i) {
 				queue.push(function(done) {
-					req.list.model.update({ _id: id }, { $set: { sortOrder: i } }, done);
+					req.list.model.updateOne({ _id: id }, { $set: { sortOrder: i } }, done);
 				});
 			});
 
@@ -174,7 +174,7 @@ exports = module.exports = function(req, res) {
 
 				req.list.selectColumns(query, columns);
 
-				query.exec(function(err, items) {
+				query.exec().then(function(err, items) {
 					if (err) return sendError('database error', err);
 					if (!items) return sendError('not found');
 

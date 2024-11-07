@@ -2,7 +2,7 @@ var keystone = require('../../../');
 var _ = require('underscore');
 var querystring = require('querystring');
 
-exports = module.exports = function(req, res) {
+exports = module.exports = function (req, res) {
 
 	var viewLocals = {
 		validationErrors: {},
@@ -15,7 +15,7 @@ exports = module.exports = function(req, res) {
 	var queryFilters = req.list.getSearchFilters(req.query.search, filters);
 	var columns = (req.query.cols) ? req.list.expandColumns(req.query.cols) : req.list.defaultColumns;
 
-	_.each(filters, function(filter, path) {
+	_.each(filters, function (filter, path) {
 		cleanFilters[path] = _.omit(filter, 'field');
 	});
 
@@ -25,7 +25,7 @@ exports = module.exports = function(req, res) {
 		sort.path = (sort.inv) ? sort.by.substr(1) : sort.by;
 		sort.field = req.list.fields[sort.path];
 
-		var clearSort = function() {
+		var clearSort = function () {
 			delete req.query.sort;
 			var qs = querystring.stringify(req.query);
 			return res.redirect(req.path + ((qs) ? '?' + qs : ''));
@@ -53,7 +53,7 @@ exports = module.exports = function(req, res) {
 
 	}
 
-	var renderView = function() {
+	var renderView = function () {
 
 		const showInAdminUI = _.property(['options', 'schema', 'showInAdminUI'])(req.list);
 		const isSuperAdmin = _.property('isSuperAdmin')(req.user);
@@ -65,7 +65,7 @@ exports = module.exports = function(req, res) {
 
 		req.list.selectColumns(query, columns);
 
-		var link_to = function(params) {
+		var link_to = function (params) {
 			var p = params.page || '';
 			delete params.page;
 			var queryParams = _.clone(req.query);
@@ -79,7 +79,7 @@ exports = module.exports = function(req, res) {
 			return '/keystone/' + req.list.path + (p ? '/' + p : '') + (params ? '?' + params : '');
 		};
 
-		query.exec(function(err, items) {
+		query.exec(function (err, items) {
 
 			if (err) {
 				console.log(err);
@@ -138,7 +138,7 @@ exports = module.exports = function(req, res) {
 
 	};
 
-	var checkCSRF = function() {
+	var checkCSRF = function () {
 		var pass = keystone.security.csrf.validate(req);
 		if (!pass) {
 			console.error('CSRF failure');
@@ -152,17 +152,17 @@ exports = module.exports = function(req, res) {
 
 		if (!checkCSRF()) return renderView();
 
-		(function() {
+		(function () {
 			var data = null;
 			if (req.query.update) {
 				try {
 					data = JSON.parse(req.query.update);
-				} catch(e) {
+				} catch (e) {
 					req.flash('error', 'There was an error parsing the update data.');
 					return renderView();
 				}
 			}
-			req.list.updateAll(data, function(err) {
+			req.list.updateAll(data, function (err) {
 				if (err) {
 					console.log('Error updating all ' + req.list.plural);
 					console.log(err);
@@ -183,10 +183,10 @@ exports = module.exports = function(req, res) {
 			return renderView();
 		}
 
-		req.list.model.findById(req.query['delete']).exec(function (err, item) { //eslint-disable-line dot-notation
+		req.list.model.findById(req.query['delete']).exec().then(function (err, item) { //eslint-disable-line dot-notation
 			if (err || !item) return res.redirect('/keystone/' + req.list.path);
 
-			item.remove(function (err) {
+			item.deleteOne({ _id: item._id }).then(function (err) {
 				if (err) {
 					console.log('Error deleting ' + req.list.singular);
 					console.log(err);
@@ -205,7 +205,7 @@ exports = module.exports = function(req, res) {
 		if (!checkCSRF()) return renderView();
 
 		item = new req.list.model();
-		item.save(function(err) {
+		item.save(function (err) {
 
 			if (err) {
 				console.log('There was an error creating the new ' + req.list.singular + ':');
@@ -239,7 +239,7 @@ exports = module.exports = function(req, res) {
 			// flashErrors: true,
 			logErrors: true,
 			fields: req.list.initialFields
-		}, function(err) {
+		}, function (err) {
 			if (err) {
 				viewLocals.createErrors = err;
 				return renderView();

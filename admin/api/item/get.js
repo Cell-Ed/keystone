@@ -19,7 +19,7 @@ module.exports = function(req, res) {
 		query.populate(req.list.tracking.updatedBy);
 	}
 
-	query.exec(function(err, item) {
+	query.exec().then(function(err, item) {
 
 		if (err) return res.status(500).json({ err: 'database error', detail: err });
 		if (!item) return res.status(404).json({ err: 'not found', id: req.params.id });
@@ -56,7 +56,7 @@ module.exports = function(req, res) {
 						if (!item.get(field.path).length) {
 							return done();
 						}
-						refList.model.find().where('_id').in(item.get(field.path)).limit(4).exec(function(err, results) {
+						refList.model.find().where('_id').in(item.get(field.path)).limit(4).exec().then(function(err, results) {
 							if (err || !results) {
 								done(err);
 							}
@@ -80,7 +80,7 @@ module.exports = function(req, res) {
 						if (!item.get(field.path)) {
 							return done();
 						}
-						refList.model.findById(item.get(field.path)).exec(function(err, result) {
+						refList.model.findById(item.get(field.path)).exec().then(function(err, result) {
 							if (result) {
 								// drilldown.data[path] = result;
 								drilldown.items.push({
@@ -134,7 +134,7 @@ module.exports = function(req, res) {
 					rel.columns = rel.list.defaultColumns;
 					rel.list.selectColumns(q, rel.columns);
 
-					q.exec(function(err, results) {
+					q.exec().then(function(err, results) {
 						rel.items = results;
 						done(err);
 					});
